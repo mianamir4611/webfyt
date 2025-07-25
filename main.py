@@ -717,4 +717,7 @@ def get_user_servers():
 if __name__ == '__main__':
     # Create user_data directory
     os.makedirs('user_data', exist_ok=True)
-    app.run(host='0.0.0.0', port=5000, debug=False, threaded=True)
+    
+    # Production configuration
+    port = int(os.environ.get('PORT', 5000))
+    app.run(host='0.0.0.0', port=port, debug=False, threaded=True)
