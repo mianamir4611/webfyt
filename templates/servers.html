@@ -1,0 +1,910 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Servers - Server Management</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 1rem;
+            min-height: 100vh;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: clamp(2rem, 5vw, 2.5rem);
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 1rem;
+        }
+
+        .user-info {
+            background: rgba(102, 126, 234, 0.1);
+            padding: 1rem;
+            border-radius: 15px;
+            margin-top: 1rem;
+            border: 1px solid rgba(102, 126, 234, 0.2);
+        }
+
+        .nav-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin: 2rem 0;
+            flex-wrap: wrap;
+        }
+
+        .nav-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            text-decoration: none;
+            border-radius: 25px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 500;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .nav-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .content {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        .refresh-btn {
+            background: linear-gradient(135deg, #74b9ff, #0984e3);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 25px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin: 0 auto 2rem;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(116, 185, 255, 0.3);
+        }
+
+        .refresh-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(116, 185, 255, 0.4);
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-3px);
+        }
+
+        .stat-card.running {
+            background: linear-gradient(135deg, #00b894, #00a085);
+        }
+
+        .stat-card.stopped {
+            background: linear-gradient(135deg, #fd79a8, #e84393);
+        }
+
+        .stat-card.convo {
+            background: linear-gradient(135deg, #74b9ff, #0984e3);
+        }
+
+        .stat-card.fyt {
+            background: linear-gradient(135deg, #a29bfe, #6c5ce7);
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        .servers-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .server-card {
+            background: #f8f9fa;
+            border-radius: 20px;
+            padding: 1.5rem;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s ease;
+            border-left: 5px solid #667eea;
+            position: relative;
+        }
+
+        .server-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.12);
+        }
+
+        .server-card.convo {
+            border-left-color: #74b9ff;
+        }
+
+        .server-card.fyt {
+            border-left-color: #a29bfe;
+        }
+
+        .server-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .server-type {
+            background: #667eea;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .server-type.convo {
+            background: #74b9ff;
+        }
+
+        .server-type.fyt {
+            background: #a29bfe;
+        }
+
+        .server-status {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #ddd;
+        }
+
+        .status-indicator.running {
+            background: #00b894;
+            animation: pulse 2s infinite;
+        }
+
+        .status-indicator.stopped {
+            background: #fd79a8;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        .server-info {
+            margin: 1rem 0;
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            margin: 0.5rem 0;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #eee;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .info-label {
+            font-weight: 600;
+            color: #666;
+            min-width: 100px;
+        }
+
+        .info-value {
+            color: #333;
+            word-break: break-all;
+            text-align: right;
+            flex: 1;
+        }
+
+        .server-actions {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 0.6rem 1rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.85rem;
+            font-weight: 500;
+            flex: 1;
+            justify-content: center;
+            min-width: 80px;
+        }
+
+        .btn-start {
+            background: #00b894;
+            color: white;
+        }
+
+        .btn-stop {
+            background: #fd79a8;
+            color: white;
+        }
+
+        .btn-restart {
+            background: #fdcb6e;
+            color: white;
+        }
+
+        .btn-delete {
+            background: #e17055;
+            color: white;
+        }
+
+        .btn-logs {
+            background: #74b9ff;
+            color: white;
+        }
+
+        .btn:hover {
+            transform: translateY(-1px);
+            opacity: 0.9;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: #666;
+        }
+
+        .empty-state i {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            color: #ddd;
+        }
+
+        .logs-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            padding: 1rem;
+        }
+
+        .logs-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            width: 100%;
+            max-width: 900px;
+            height: 80vh;
+            border-radius: 20px;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .logs-header {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 20px 20px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .logs-header h3 {
+            margin: 0;
+            font-size: 1.25rem;
+        }
+
+        .logs-body {
+            flex: 1;
+            padding: 1rem;
+            overflow-y: auto;
+            background: #1a1a1a;
+            color: #00ff00;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            line-height: 1.4;
+        }
+
+        .close-logs {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 50%;
+            transition: background 0.3s ease;
+        }
+
+        .close-logs:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 1rem 1.5rem;
+            border-radius: 10px;
+            color: white;
+            z-index: 1001;
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+            font-weight: 500;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .notification.success {
+            background: linear-gradient(135deg, #00b894, #00a085);
+        }
+
+        .notification.error {
+            background: linear-gradient(135deg, #e17055, #d63031);
+        }
+
+        /* Mobile Optimizations */
+        @media (max-width: 768px) {
+            .container {
+                padding: 0.75rem;
+            }
+
+            .header {
+                padding: 1.5rem;
+            }
+
+            .content {
+                padding: 1.5rem;
+            }
+
+            .nav-buttons {
+                gap: 0.5rem;
+            }
+
+            .nav-btn {
+                padding: 0.6rem 1rem;
+                font-size: 0.9rem;
+                flex: 1;
+                justify-content: center;
+                min-width: 120px;
+            }
+
+            .stats {
+                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+                gap: 0.75rem;
+            }
+
+            .stat-card {
+                padding: 1rem;
+            }
+
+            .stat-number {
+                font-size: 2rem;
+            }
+
+            .servers-grid {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+
+            .server-card {
+                padding: 1rem;
+            }
+
+            .server-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.75rem;
+            }
+
+            .info-row {
+                flex-direction: column;
+                gap: 0.25rem;
+            }
+
+            .info-value {
+                text-align: left;
+            }
+
+            .server-actions {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+
+            .btn {
+                flex: none;
+                width: 100%;
+            }
+
+            .logs-content {
+                width: 95%;
+                height: 85vh;
+            }
+
+            .logs-header {
+                padding: 1rem;
+            }
+
+            .notification {
+                right: 10px;
+                left: 10px;
+                transform: translateY(-100px);
+            }
+
+            .notification.show {
+                transform: translateY(0);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .header h1 {
+                font-size: 1.75rem;
+            }
+
+            .nav-btn {
+                padding: 0.5rem 0.75rem;
+                font-size: 0.8rem;
+            }
+
+            .refresh-btn {
+                padding: 0.75rem 1.5rem;
+                font-size: 0.9rem;
+            }
+
+            .stat-number {
+                font-size: 1.75rem;
+            }
+
+            .server-card {
+                padding: 0.75rem;
+            }
+
+            .btn {
+                padding: 0.5rem 0.75rem;
+                font-size: 0.8rem;
+            }
+        }
+
+        /* Tablet Optimizations */
+        @media (min-width: 768px) and (max-width: 1024px) {
+            .servers-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .nav-buttons {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+        }
+
+        /* Large Screen Optimizations */
+        @media (min-width: 1200px) {
+            .servers-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-server"></i> My Servers</h1>
+            <div class="user-info">
+                <p><i class="fas fa-user"></i> Logged in as: <strong>{{ user_email }}</strong></p>
+            </div>
+        </div>
+
+        <div class="nav-buttons">
+            <a href="/" class="nav-btn">
+                <i class="fas fa-home"></i> Dashboard
+            </a>
+            <a href="/convo" class="nav-btn">
+                <i class="fas fa-comments"></i> Start Convo Server
+            </a>
+            <a href="/fyt" class="nav-btn">
+                <i class="fas fa-comment-dots"></i> Start Post Convo Server
+            </a>
+            <a href="/logout" class="nav-btn">
+                <i class="fas fa-sign-out-alt"></i> Logout
+            </a>
+        </div>
+
+        <div class="content">
+            <button class="refresh-btn" onclick="loadServers()">
+                <i class="fas fa-sync-alt"></i> Refresh Servers
+            </button>
+
+            <div class="stats" id="statsContainer">
+                <!-- Stats will be populated by JavaScript -->
+            </div>
+
+            <div id="serversContainer">
+                <!-- Servers will be populated by JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Logs Modal -->
+    <div class="logs-modal" id="logsModal">
+        <div class="logs-content">
+            <div class="logs-header">
+                <h3><i class="fas fa-file-alt"></i> Server Logs</h3>
+                <button class="close-logs" onclick="closeLogs()">&times;</button>
+            </div>
+            <div class="logs-body" id="logsBody">
+                <!-- Logs will be populated here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentLogsServerId = null;
+        let logsInterval = null;
+
+        async function loadServers() {
+            try {
+                const response = await fetch('/get_user_servers');
+                const data = await response.json();
+                
+                displayStats(data.servers);
+                displayServers(data.servers);
+            } catch (error) {
+                console.error('Error loading servers:', error);
+                showNotification('Failed to load servers', 'error');
+            }
+        }
+
+        function displayStats(servers) {
+            const statsContainer = document.getElementById('statsContainer');
+            const serverList = Object.values(servers);
+            
+            const total = serverList.length;
+            const running = serverList.filter(s => s.running).length;
+            const stopped = serverList.filter(s => !s.running).length;
+            const convo = serverList.filter(s => s.type === 'convo').length;
+            const fyt = serverList.filter(s => s.type === 'fyt').length;
+
+            statsContainer.innerHTML = `
+                <div class="stat-card">
+                    <span class="stat-number">${total}</span>
+                    <div class="stat-label">Total Servers</div>
+                </div>
+                <div class="stat-card running">
+                    <span class="stat-number">${running}</span>
+                    <div class="stat-label">Running</div>
+                </div>
+                <div class="stat-card stopped">
+                    <span class="stat-number">${stopped}</span>
+                    <div class="stat-label">Stopped</div>
+                </div>
+                <div class="stat-card convo">
+                    <span class="stat-number">${convo}</span>
+                    <div class="stat-label">Convo Servers</div>
+                </div>
+                <div class="stat-card fyt">
+                    <span class="stat-number">${fyt}</span>
+                    <div class="stat-label">Post Convo Servers</div>
+                </div>
+            `;
+        }
+
+        function displayServers(servers) {
+            const container = document.getElementById('serversContainer');
+            const serverList = Object.values(servers);
+
+            if (serverList.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-server"></i>
+                        <h3>No servers found</h3>
+                        <p>Start by creating your first server!</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = `
+                <div class="servers-grid">
+                    ${serverList.map(server => `
+                        <div class="server-card ${server.type}">
+                            <div class="server-header">
+                                <span class="server-type ${server.type}">${server.type.toUpperCase()}</span>
+                                <div class="server-status">
+                                    <span class="status-indicator ${server.running ? 'running' : 'stopped'}"></span>
+                                    <span>${server.running ? 'Running' : 'Stopped'}</span>
+                                </div>
+                            </div>
+                            
+                            <div class="server-info">
+                                <div class="info-row">
+                                    <span class="info-label">Server ID:</span>
+                                    <span class="info-value">${server.server_id.substring(0, 8)}...</span>
+                                </div>
+                                <div class="info-row">
+                                    <span class="info-label">Started:</span>
+                                    <span class="info-value">${server.started}</span>
+                                </div>
+                                ${server.thread_id ? `
+                                    <div class="info-row">
+                                        <span class="info-label">Thread ID:</span>
+                                        <span class="info-value">${server.thread_id}</span>
+                                    </div>
+                                ` : ''}
+                                ${server.post_id ? `
+                                    <div class="info-row">
+                                        <span class="info-label">Post ID:</span>
+                                        <span class="info-value">${server.post_id}</span>
+                                    </div>
+                                ` : ''}
+                                ${server.hater_name ? `
+                                    <div class="info-row">
+                                        <span class="info-label">Hater Name:</span>
+                                        <span class="info-value">${server.hater_name}</span>
+                                    </div>
+                                ` : ''}
+                                <div class="info-row">
+                                    <span class="info-label">Speed:</span>
+                                    <span class="info-value">${server.speed}s</span>
+                                </div>
+                            </div>
+
+                            <div class="server-actions">
+                                ${!server.running ? `
+                                    <button class="btn btn-start" onclick="restartServer('${server.server_id}')">
+                                        <i class="fas fa-play"></i> Start
+                                    </button>
+                                ` : `
+                                    <button class="btn btn-stop" onclick="stopServer('${server.server_id}')">
+                                        <i class="fas fa-stop"></i> Stop
+                                    </button>
+                                `}
+                                <button class="btn btn-restart" onclick="restartServer('${server.server_id}')">
+                                    <i class="fas fa-redo"></i> Restart
+                                </button>
+                                <button class="btn btn-logs" onclick="showLogs('${server.server_id}')">
+                                    <i class="fas fa-file-alt"></i> Logs
+                                </button>
+                                <button class="btn btn-delete" onclick="deleteServer('${server.server_id}')">
+                                    <i class="fas fa-trash"></i> Delete
+                                </button>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        async function stopServer(serverId) {
+            try {
+                const response = await fetch('/stop_server', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ server_id: serverId })
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    showNotification('Server stopped successfully', 'success');
+                    loadServers();
+                } else {
+                    showNotification(result.error || 'Failed to stop server', 'error');
+                }
+            } catch (error) {
+                showNotification('Network error occurred', 'error');
+            }
+        }
+
+        async function restartServer(serverId) {
+            try {
+                const response = await fetch('/restart_server', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ server_id: serverId })
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    showNotification('Server restarted successfully', 'success');
+                    loadServers();
+                } else {
+                    showNotification(result.error || 'Failed to restart server', 'error');
+                }
+            } catch (error) {
+                showNotification('Network error occurred', 'error');
+            }
+        }
+
+        async function deleteServer(serverId) {
+            if (!confirm('Are you sure you want to delete this server? This action cannot be undone.')) {
+                return;
+            }
+
+            try {
+                const response = await fetch('/delete_server', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ server_id: serverId })
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    showNotification('Server deleted successfully', 'success');
+                    loadServers();
+                } else {
+                    showNotification(result.error || 'Failed to delete server', 'error');
+                }
+            } catch (error) {
+                showNotification('Network error occurred', 'error');
+            }
+        }
+
+        async function showLogs(serverId) {
+            currentLogsServerId = serverId;
+            const modal = document.getElementById('logsModal');
+            const logsBody = document.getElementById('logsBody');
+            
+            modal.style.display = 'block';
+            logsBody.innerHTML = 'Loading logs...';
+            
+            await loadLogs();
+            
+            // Start auto-refresh for logs
+            logsInterval = setInterval(loadLogs, 2000);
+        }
+
+        async function loadLogs() {
+            if (!currentLogsServerId) return;
+            
+            try {
+                const response = await fetch(`/server_logs/${currentLogsServerId}`);
+                const data = await response.json();
+                
+                const logsBody = document.getElementById('logsBody');
+                if (data.logs && data.logs.length > 0) {
+                    logsBody.innerHTML = data.logs.join('\n');
+                    logsBody.scrollTop = logsBody.scrollHeight;
+                } else {
+                    logsBody.innerHTML = 'No logs available for this server.';
+                }
+            } catch (error) {
+                console.error('Error loading logs:', error);
+            }
+        }
+
+        function closeLogs() {
+            const modal = document.getElementById('logsModal');
+            modal.style.display = 'none';
+            currentLogsServerId = null;
+            
+            if (logsInterval) {
+                clearInterval(logsInterval);
+                logsInterval = null;
+            }
+        }
+
+        function showNotification(message, type) {
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.innerHTML = `<i class="fas ${type === 'success' ? 'fa-check' : 'fa-exclamation-triangle'}"></i> ${message}`;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => notification.classList.add('show'), 100);
+            setTimeout(() => {
+                notification.classList.remove('show');
+                setTimeout(() => document.body.removeChild(notification), 300);
+            }, 3000);
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('logsModal');
+            if (event.target === modal) {
+                closeLogs();
+            }
+        }
+
+        // Load servers on page load
+        document.addEventListener('DOMContentLoaded', loadServers);
+
+        // Auto-refresh servers every 30 seconds
+        setInterval(loadServers, 30000);
+    </script>
+</body>
+</html>
